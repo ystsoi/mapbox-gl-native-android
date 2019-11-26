@@ -670,6 +670,23 @@ public class OfflineManager {
   @Keep
   public native void setOfflineMapboxTileCountLimit(long limit);
 
+  /**
+   * Sets the automatic database file packing.
+   * By default, the automatic database file packing is enabled.
+   * <p>
+   * If the automatic database file packing is enabled, the database file is packed
+   * automatically after {@link OfflineManager#clearAmbientCache} or {@link OfflineRegion#delete}
+   * calls.
+   *
+   * If the automatic database file packing is disabled, database file packing is only invoked on
+   * explicit {@link OfflineManager#packDatabase} calls.
+   * </p>
+   *
+   * @param autopack flag setting the automatic database file packing.
+   */
+  @Keep
+  public native void setAutopack(boolean autopack);
+
   @Keep
   private native void initialize(FileSource fileSource);
 
