@@ -24,6 +24,7 @@ import com.mapbox.android.gestures.StandardGestureDetector;
 import com.mapbox.android.gestures.StandardScaleGestureDetector;
 import com.mapbox.mapboxsdk.R;
 import com.mapbox.mapboxsdk.constants.MapboxConstants;
+import com.mapbox.mapboxsdk.log.Logger;
 import com.mapbox.mapboxsdk.utils.MathUtils;
 
 import java.util.ArrayList;
@@ -418,10 +419,14 @@ final class MapGestureDetector {
 
       float screenDensity = uiSettings.getPixelRatio();
 
+      Logger.e("FCK", "brb: "+ Math.abs(velocityY));
+
       // calculate velocity vector for xy dimensions, independent from screen size
       double velocityXY = Math.hypot(velocityX / screenDensity, velocityY / screenDensity);
-      if (velocityXY < MapboxConstants.VELOCITY_THRESHOLD_IGNORE_FLING) {
+      if (velocityXY < MapboxConstants.VELOCITY_THRESHOLD_IGNORE_FLING
+        || (!uiSettings.isHorizontalScrollGesturesEnabled() && Math.abs(velocityY) < MapboxConstants.VELOCITY_THRESHOLD_IGNORE_VERTICAL_FLING)) {
         // ignore short flings, these can occur when other gestures just have finished executing
+        // or when horizontal scrolling is disabled, and we should only fling vertically
         return false;
       }
 
@@ -434,11 +439,6 @@ final class MapGestureDetector {
       // calculate animation time based on displacement
       long animationTime = (long) (velocityXY / 7 / tiltFactor + MapboxConstants.ANIMATION_DURATION_FLING_BASE);
       if (!uiSettings.isHorizontalScrollGesturesEnabled()) {
-        // determine if angle of fling is valid for performing a vertical fling
-        double angle = Math.abs(Math.toDegrees(Math.atan(offsetX / offsetY)));
-        if (angle > MapboxConstants.ANGLE_THRESHOLD_IGNORE_VERTICAL_FLING) {
-          return false;
-        }
         offsetX = 0.0;
       }
 

@@ -74,9 +74,9 @@ public class MapboxConstants {
   public static final long VELOCITY_THRESHOLD_IGNORE_FLING = 1000;
 
   /**
-   * Vertical angle threshold for a horizontal disabled fling gesture
+   * Velocity threshold for a vertical fling gesture
    */
-  public static final long ANGLE_THRESHOLD_IGNORE_VERTICAL_FLING = 75;
+  public static final long VELOCITY_THRESHOLD_IGNORE_VERTICAL_FLING = 2000;
 
   /**
    * Value by which the default rotation threshold will be increased when scaling
