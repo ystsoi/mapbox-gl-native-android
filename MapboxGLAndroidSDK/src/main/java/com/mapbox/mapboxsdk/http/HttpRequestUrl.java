@@ -26,7 +26,7 @@ public class HttpRequestUrl {
   public static String buildResourceUrl(@NonNull String host, String resourceUrl, int querySize, boolean offline) {
     requestBuilder.setLength(0); // clear previous builder
     requestBuilder.append(resourceUrl);
-    if (isValidMapboxEndpoint(host)) {
+//    if (isValidMapboxEndpoint(host)) {
       if (querySize == 0) {
         requestBuilder.append("?");
       } else {
@@ -36,7 +36,7 @@ public class HttpRequestUrl {
         requestBuilder.append("offline=true&");
       }
       requestBuilder.append("sku=").append(Mapbox.getSkuToken());
-    }
+//    }
     return requestBuilder.toString();
   }
 
