@@ -70,11 +70,11 @@ public class MapSnapshotter {
   }
 
   public interface MapSnapshotterObserver {
-    void onDidFailLoadingStyle(MapSnapshotter snapshotter, String reason);
+    void onDidFailLoadingStyle(String reason);
 
-    void onDidFinishLoadingStyle(MapSnapshotter snapshotter);
+    void onDidFinishLoadingStyle();
 
-    void onStyleImageMissing(MapSnapshotter snapshotter, String imageName);
+    void onStyleImageMissing(String imageName);
   }
 
 //  public class MapSnapshotStyle {
@@ -429,13 +429,8 @@ public class MapSnapshotter {
    * @param options the options to use for the snapshot
    */
   public MapSnapshotter(@NonNull Context context, @NonNull Options options) {
-    this(context, options, null);
-  }
-
-  public MapSnapshotter(@NonNull Context context, @NonNull Options options, MapSnapshotterObserver observer_) {
     checkThread();
     this.context = context.getApplicationContext();
-    observer = observer_;
     TelemetryDefinition telemetry = Mapbox.getTelemetry();
     if (telemetry != null) {
       telemetry.onAppUserTurnstileEvent();
@@ -451,7 +446,9 @@ public class MapSnapshotter {
       options.showLogo, options.localIdeographFontFamily);
   }
 
-
+  public void setObserver(MapSnapshotterObserver observer) {
+    this.observer = observer;
+  }
 
   /**
    * Starts loading and rendering the snapshot. The callback will be fired
@@ -532,7 +529,7 @@ public class MapSnapshotter {
   }
 
   public void addLayer(@NonNull Layer layer) {
-      nativeAddLayer(layer.getNativePtr(), null);
+    nativeAddLayer(layer.getNativePtr(), null);
   }
 
   /**
@@ -726,7 +723,7 @@ public class MapSnapshotter {
   @Keep
   protected void onDidFailLoadingStyle(String reason) {
     if (observer != null) {
-      observer.onDidFailLoadingStyle(this, reason);
+      observer.onDidFailLoadingStyle(reason);
       reset();
     }
   }
@@ -735,7 +732,7 @@ public class MapSnapshotter {
   @Keep
   protected void onDidFinishLoadingStyle() {
     if (observer != null) {
-      observer.onDidFinishLoadingStyle(this);
+      observer.onDidFinishLoadingStyle();
     }
   }
 
@@ -743,7 +740,7 @@ public class MapSnapshotter {
   @Keep
   protected void onStyleImageMissing(String imageName) {
     if (observer != null) {
-      observer.onStyleImageMissing(this, imageName);
+      observer.onStyleImageMissing(imageName);
     }
   }
 

@@ -65,22 +65,22 @@ public class MapSnapshotterActivity extends AppCompatActivity {
   }
 
   class SnapshotterObserver implements MapSnapshotter.MapSnapshotterObserver {
-    private MapSnapshotterActivity mapSnapshotterActivity;
+    private MapSnapshotter snapshotter;
     private int row;
     private int column;
-    public SnapshotterObserver(MapSnapshotterActivity mapSnapshotterActivity, int row, int column) {
-      this.mapSnapshotterActivity = mapSnapshotterActivity;
+    public SnapshotterObserver(MapSnapshotter snapshotter, int row, int column) {
+      this.snapshotter = snapshotter;
       this.row = row;
       this.column = column;
     }
 
     @Override
-    public void onDidFailLoadingStyle(MapSnapshotter snapshotter, String error) {
+    public void onDidFailLoadingStyle(String error) {
     }
 
     @Override
-    public void onDidFinishLoadingStyle(MapSnapshotter snapshotter) {
-      BackgroundLayer bg = new BackgroundLayer("green_tint");
+    public void onDidFinishLoadingStyle() {
+      BackgroundLayer bg = new BackgroundLayer("rand_tint");
       bg.setProperties(backgroundColor(Color.valueOf(randomInRange(0.0f, 1.0f), randomInRange(0.0f, 1.0f), randomInRange(0.0f, 1.0f), 0.2f).toArgb()));
       snapshotter.addLayer(bg);
       snapshotter.start(snapshot -> {
@@ -95,8 +95,7 @@ public class MapSnapshotterActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onStyleImageMissing(MapSnapshotter snapshotter, String imageName) {
-
+    public void onStyleImageMissing(String imageName) {
     }
   }
 
@@ -137,7 +136,8 @@ public class MapSnapshotterActivity extends AppCompatActivity {
       );
     }
 
-    MapSnapshotter snapshotter = new MapSnapshotter(MapSnapshotterActivity.this, options, new SnapshotterObserver(this, row, column));
+    MapSnapshotter snapshotter = new MapSnapshotter(MapSnapshotterActivity.this, options);
+    snapshotter.setObserver(new SnapshotterObserver(snapshotter, row, column));
     snapshotters.add(snapshotter);
   }
 
