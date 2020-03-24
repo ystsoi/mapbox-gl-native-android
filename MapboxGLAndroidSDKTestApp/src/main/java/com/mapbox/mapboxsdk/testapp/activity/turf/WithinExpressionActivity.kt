@@ -12,6 +12,7 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.snapshotter.MapSnapshotter
 import com.mapbox.mapboxsdk.style.expressions.Expression.within
 import com.mapbox.mapboxsdk.style.layers.CircleLayer
 import com.mapbox.mapboxsdk.style.layers.FillLayer
@@ -22,7 +23,8 @@ import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.mapboxsdk.testapp.R
-import kotlinx.android.synthetic.main.activity_physical_circle.*
+import kotlinx.android.synthetic.main.activity_physical_circle.mapView
+import kotlinx.android.synthetic.main.activity_snapshot.*
 
 /**
  * An Activity that showcases the within expression to filter features outside a geometry
@@ -30,9 +32,41 @@ import kotlinx.android.synthetic.main.activity_physical_circle.*
 class WithinExpressionActivity : AppCompatActivity() {
 
   private lateinit var mapboxMap: MapboxMap
+  private lateinit var snapshotter: MapSnapshotter
+  private var snapshotInProgress = false
   private val handler: Handler = Handler()
   private val runnable: Runnable = Runnable {
     optimizeStyle()
+  }
+
+  private val cameraListener = object : MapView.OnCameraDidChangeListener {
+    override fun onCameraDidChange(animated: Boolean) {
+      if (!snapshotInProgress) {
+        snapshotInProgress = true
+        snapshotter.setCameraPosition(mapboxMap.cameraPosition)
+        snapshotter.start {
+          imageView.setImageBitmap(it.bitmap)
+          snapshotInProgress = false
+        }
+      }
+    }
+  }
+
+  private val snapshotterObserver = object : MapSnapshotter.Observer {
+    override fun onDidFinishLoadingStyle() {
+      // Show only POI labels inside geometry using within expression
+      val symbolLayer = snapshotter.getLayer("poi-label") as SymbolLayer
+      symbolLayer.setFilter(
+        within(
+          bufferLineStringGeometry()
+        )
+      )
+
+      // Hide other types of labels to highlight POI labels
+      (snapshotter.getLayer("road-label") as SymbolLayer).setProperties(visibility(NONE))
+      (snapshotter.getLayer("transit-label") as SymbolLayer).setProperties(visibility(NONE))
+      (snapshotter.getLayer("road-number-shield") as SymbolLayer).setProperties(visibility(NONE))
+    }
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,11 +86,10 @@ class WithinExpressionActivity : AppCompatActivity() {
       // Wait for the map to become idle before manipulating the style and camera of the map
       mapView.addOnDidBecomeIdleListener(object : MapView.OnDidBecomeIdleListener {
         override fun onDidBecomeIdle() {
-          handler.postDelayed(runnable, 2500)
+          handler.postDelayed(runnable, 100)
           mapView.removeOnDidBecomeIdleListener(this)
         }
       })
-
       // Load mapbox streets and add lines and circles
       setupStyle()
     }
@@ -94,6 +127,15 @@ class WithinExpressionActivity : AppCompatActivity() {
     mapboxMap.setStyle(
       Style.Builder()
         .fromUri(Style.MAPBOX_STREETS)
+    ) {
+      mapView.addOnCameraDidChangeListener(cameraListener)
+    }
+
+    val options = MapSnapshotter.Options(imageView.width / 2, imageView.height / 2)
+      .withCameraPosition(mapboxMap.cameraPosition)
+      .withPixelRatio(2.0f)
+      .withStyleBuilder(Style.Builder()
+        .fromUri(Style.MAPBOX_STREETS)
         .withSources(
           GeoJsonSource(
             POINT_ID, LineString.fromLngLats(coordinates)
@@ -116,22 +158,18 @@ class WithinExpressionActivity : AppCompatActivity() {
               circleColor(Color.DKGRAY),
               circleOpacity(0.75f)
             ), "poi-label"
-        )
-    )
+        ).withLayerBelow(
+          FillLayer(FILL_ID, FILL_ID)
+            .withProperties(
+              fillOpacity(0.12f),
+              fillColor(Color.YELLOW)
+            ), LINE_ID
+        ))
+    snapshotter = MapSnapshotter(this, options)
+    snapshotter.setObserver(snapshotterObserver)
   }
 
   private fun optimizeStyle() {
-    val style = mapboxMap.style!!
-
-    // Add fill layer to represent buffered LineString
-    mapboxMap.style!!.addLayerBelow(
-      FillLayer(FILL_ID, FILL_ID)
-        .withProperties(
-          fillOpacity(0.12f),
-          fillColor(Color.YELLOW)
-        ), LINE_ID
-    )
-
     // Move to a new camera position
     mapboxMap.easeCamera(
       CameraUpdateFactory.newCameraPosition(
@@ -143,19 +181,6 @@ class WithinExpressionActivity : AppCompatActivity() {
           .build()
       ), 1750
     )
-
-    // Show only POI labels inside geometry using within expression
-    val symbolLayer = style.getLayer("poi-label") as SymbolLayer
-    symbolLayer.setFilter(
-      within(
-        bufferLineStringGeometry()
-      )
-    )
-
-    // Hide other types of labels to highlight POI labels
-    (style.getLayer("road-label") as SymbolLayer).setProperties(visibility(NONE))
-    (style.getLayer("transit-label") as SymbolLayer).setProperties(visibility(NONE))
-    (style.getLayer("road-number-shield") as SymbolLayer).setProperties(visibility(NONE))
   }
 
   override fun onStart() {
