@@ -519,7 +519,7 @@ final class LocationLayerController {
       @Override
       public void onNewAnimationValue(Float newPulsingRadiusValue) {
         updatePulsingLocationCircleRadius(newPulsingRadiusValue);
-        if (options.pulsingCircleFadeEnabled()) {
+        if (options.pulseFadeEnabled()) {
           double newPulsingOpacityValue = 1 - ((newPulsingRadiusValue / 100) * 3);
           updatePulsingLocationCircleOpacity((float) newPulsingOpacityValue);
         }
