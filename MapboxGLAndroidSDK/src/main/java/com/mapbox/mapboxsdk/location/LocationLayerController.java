@@ -302,26 +302,18 @@ final class LocationLayerController {
   }
 
   /**
-   * Updates the {@link LocationComponentConstants#PROPERTY_PULSING_RADIUS} property value and refreshes
+   * Updates the {@link LocationComponentConstants} property values and refreshes
    * the LocationComponent source. This leads to a smooth update to the visuals of the pulsing
    * LocationComponent circle.
    *
    * @param radius The new radius in the animation.
-   */
-  private void updatePulsingLocationCircleRadius(float radius) {
-    locationFeature.addNumberProperty(PROPERTY_PULSING_RADIUS, radius);
-    refreshSource();
-  }
-
-  /**
-   * Updates the {@link LocationComponentConstants#PROPERTY_PULSING_OPACITY} property value and refreshes
-   * the LocationComponent source. This leads to a smooth update to the visuals of the pulsing
-   * LocationComponent circle. This is used if the fade option is set to true while setting pulsing options.
-   *
    * @param opacity The new opacity in the animation.
    */
-  private void updatePulsingLocationCircleOpacity(float opacity) {
-    locationFeature.addNumberProperty(PROPERTY_PULSING_OPACITY, opacity);
+  private void updatePulsingUi(float radius, @Nullable Float opacity) {
+    locationFeature.addNumberProperty(PROPERTY_PULSING_RADIUS, radius);
+    if (opacity != null) {
+      locationFeature.addNumberProperty(PROPERTY_PULSING_OPACITY, opacity);
+    }
     refreshSource();
   }
 
@@ -517,16 +509,14 @@ final class LocationLayerController {
   private final MapboxAnimator.AnimationsValueChangeListener<Float> pulsingCircleRadiusListener =
     new MapboxAnimator.AnimationsValueChangeListener<Float>() {
       @Override
-      public void onNewAnimationValue(Float newPulsingRadiusValue) {
-        updatePulsingLocationCircleRadius(newPulsingRadiusValue);
+      public void onNewAnimationValue(Float newPulseRadiusValue) {
+        Float newPulseOpacityValue = null;
         if (options.pulseFadeEnabled()) {
-          double newPulsingOpacityValue = 1 - ((newPulsingRadiusValue / 100) * 3);
-          updatePulsingLocationCircleOpacity((float) newPulsingOpacityValue);
+          newPulseOpacityValue = (float) 1 - ((newPulseRadiusValue / 100) * 3);
         }
+        updatePulsingUi(newPulseRadiusValue, newPulseOpacityValue);
       }
   };
-
-
 
   Set<AnimatorListenerHolder> getAnimationListeners() {
     Set<AnimatorListenerHolder> holders = new HashSet<>();
