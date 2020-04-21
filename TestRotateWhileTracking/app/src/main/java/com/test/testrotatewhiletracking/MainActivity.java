@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
                         case CameraMode.TRACKING_COMPASS:
                             locationComponent.setCameraMode(CameraMode.TRACKING);
                             if (locationComponent.getLastKnownLocation() != null) {
-                                locationComponent.rotateWhileTracking(0, 150);
+                                mapboxMap.resetNorth();
                             }
                             break;
                         default:
