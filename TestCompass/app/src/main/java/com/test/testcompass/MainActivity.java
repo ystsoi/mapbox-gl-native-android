@@ -191,7 +191,82 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 // The x-axis is all we care about here.
                 b.rotationVectorHori.setText(String.valueOf(((float) Math.toDegrees(orientation[0]) + 360) % 360));
-                b.rotationVectorPitch.setText(String.valueOf((float) Math.toDegrees(orientation[1])));
+                b.rotationVectorPitchRoll.setText(String.valueOf((float) Math.toDegrees(orientation[1])) + ", " + String.valueOf((float) Math.toDegrees(orientation[2])));
+            }
+
+            {
+                final int worldAxisForDeviceAxisX;
+                final int worldAxisForDeviceAxisY;
+
+                // Remap the axes as if the device screen was upside down and facing back,
+                // and adjust the rotation matrix for the device orientation.
+                switch (windowManager.getDefaultDisplay().getRotation()) {
+                    case Surface.ROTATION_90:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Z;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
+                        break;
+                    case Surface.ROTATION_180:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
+                        break;
+                    case Surface.ROTATION_270:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_Z;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_X;
+                        break;
+                    case Surface.ROTATION_0:
+                    default:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Z;
+                        break;
+                }
+
+                float[] adjustedRotationMatrix = new float[9];
+                SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
+                        worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                // Transform rotation matrix into azimuth/pitch/roll
+                float[] orientation = new float[3];
+                SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+
+                // The x-axis is all we care about here.
+                b.rotationVectorVert2.setText(String.valueOf(((float) Math.toDegrees(orientation[0]) + 360) % 360));
+            }
+
+            {
+                final int worldAxisForDeviceAxisX;
+                final int worldAxisForDeviceAxisY;
+
+                // Remap the axes as if the device screen was face down,
+                // and adjust the rotation matrix for the device orientation.
+                switch (windowManager.getDefaultDisplay().getRotation()) {
+                    case Surface.ROTATION_90:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Y;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
+                        break;
+                    case Surface.ROTATION_180:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_Y;
+                        break;
+                    case Surface.ROTATION_270:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_Y;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_X;
+                        break;
+                    case Surface.ROTATION_0:
+                    default:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Y;
+                        break;
+                }
+                float[] adjustedRotationMatrix = new float[9];
+                SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
+                        worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                // Transform rotation matrix into azimuth/pitch/roll
+                float[] orientation = new float[3];
+                SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+
+                // The x-axis is all we care about here.
+                b.rotationVectorHori2.setText(String.valueOf(((float) Math.toDegrees(orientation[0]) + 360) % 360));
             }
 
             {
@@ -229,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 SensorManager.getOrientation(adjustedRotationMatrix, orientation);
 
                 if (orientation[1] < -Math.PI / 4) {
-                    // The pitch is less than 45 degrees.
+                    // The pitch is less than -45 degrees.
                     // Remap the axes as if the device screen was the instrument panel,
                     // and adjust the rotation matrix for the device orientation.
                     switch (windowManager.getDefaultDisplay().getRotation()) {
@@ -249,6 +324,64 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         default:
                             worldAxisForDeviceAxisX = SensorManager.AXIS_X;
                             worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
+                            break;
+                    }
+
+                    SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
+                            worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                    // Transform rotation matrix into azimuth/pitch/roll
+                    SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+                } else if (orientation[1] > Math.PI / 4) {
+                    // The pitch is larger than 45 degrees.
+                    // Remap the axes as if the device screen was upside down and facing back,
+                    // and adjust the rotation matrix for the device orientation.
+                    switch (windowManager.getDefaultDisplay().getRotation()) {
+                        case Surface.ROTATION_90:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Z;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
+                            break;
+                        case Surface.ROTATION_180:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
+                            break;
+                        case Surface.ROTATION_270:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_Z;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_X;
+                            break;
+                        case Surface.ROTATION_0:
+                        default:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Z;
+                            break;
+                    }
+
+                    SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
+                            worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                    // Transform rotation matrix into azimuth/pitch/roll
+                    SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+                } else if (Math.abs(orientation[2]) > Math.PI / 2) {
+                    // The roll is less than -90 degrees, or is larger than 90 degrees.
+                    // Remap the axes as if the device screen was face down,
+                    // and adjust the rotation matrix for the device orientation.
+                    switch (windowManager.getDefaultDisplay().getRotation()) {
+                        case Surface.ROTATION_90:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Y;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
+                            break;
+                        case Surface.ROTATION_180:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_Y;
+                            break;
+                        case Surface.ROTATION_270:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_Y;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_X;
+                            break;
+                        case Surface.ROTATION_0:
+                        default:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Y;
                             break;
                     }
 
@@ -378,7 +511,83 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 // The x-axis is all we care about here.
                 b.accelerometerMagneticHori.setText(String.valueOf(((float) Math.toDegrees(orientation[0]) + 360) % 360));
-                b.accelerometerMagneticPitch.setText(String.valueOf((float) Math.toDegrees(orientation[1])));
+                b.accelerometerMagneticPitchRoll.setText(String.valueOf((float) Math.toDegrees(orientation[1])) + ", " + String.valueOf((float) Math.toDegrees(orientation[2])));
+            }
+
+            {
+                final int worldAxisForDeviceAxisX;
+                final int worldAxisForDeviceAxisY;
+
+                // Remap the axes as if the device screen was upside down and facing back,
+                // and adjust the rotation matrix for the device orientation.
+                switch (windowManager.getDefaultDisplay().getRotation()) {
+                    case Surface.ROTATION_90:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Z;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
+                        break;
+                    case Surface.ROTATION_180:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
+                        break;
+                    case Surface.ROTATION_270:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_Z;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_X;
+                        break;
+                    case Surface.ROTATION_0:
+                    default:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Z;
+                        break;
+                }
+
+                float[] adjustedRotationMatrix = new float[9];
+                SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
+                        worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                // Transform rotation matrix into azimuth/pitch/roll
+                float[] orientation = new float[3];
+                SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+
+                // The x-axis is all we care about here.
+                b.accelerometerMagneticVert2.setText(String.valueOf(((float) Math.toDegrees(orientation[0]) + 360) % 360));
+            }
+
+            {
+                final int worldAxisForDeviceAxisX;
+                final int worldAxisForDeviceAxisY;
+
+                // Remap the axes as if the device screen was face down,
+                // and adjust the rotation matrix for the device orientation.
+                switch (windowManager.getDefaultDisplay().getRotation()) {
+                    case Surface.ROTATION_90:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Y;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
+                        break;
+                    case Surface.ROTATION_180:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_Y;
+                        break;
+                    case Surface.ROTATION_270:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_Y;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_X;
+                        break;
+                    case Surface.ROTATION_0:
+                    default:
+                        worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                        worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Y;
+                        break;
+                }
+
+                float[] adjustedRotationMatrix = new float[9];
+                SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
+                        worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                // Transform rotation matrix into azimuth/pitch/roll
+                float[] orientation = new float[3];
+                SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+
+                // The x-axis is all we care about here.
+                b.accelerometerMagneticHori2.setText(String.valueOf(((float) Math.toDegrees(orientation[0]) + 360) % 360));
             }
 
             {
@@ -416,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 SensorManager.getOrientation(adjustedRotationMatrix, orientation);
 
                 if (orientation[1] < -Math.PI / 4) {
-                    // The pitch is less than 45 degrees.
+                    // The pitch is less than -45 degrees.
                     // Remap the axes as if the device screen was the instrument panel,
                     // and adjust the rotation matrix for the device orientation.
                     switch (windowManager.getDefaultDisplay().getRotation()) {
@@ -436,6 +645,64 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         default:
                             worldAxisForDeviceAxisX = SensorManager.AXIS_X;
                             worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
+                            break;
+                    }
+
+                    SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
+                            worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                    // Transform rotation matrix into azimuth/pitch/roll
+                    SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+                } else if (orientation[1] > Math.PI / 4) {
+                    // The pitch is larger than 45 degrees.
+                    // Remap the axes as if the device screen was upside down and facing back,
+                    // and adjust the rotation matrix for the device orientation.
+                    switch (windowManager.getDefaultDisplay().getRotation()) {
+                        case Surface.ROTATION_90:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Z;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
+                            break;
+                        case Surface.ROTATION_180:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
+                            break;
+                        case Surface.ROTATION_270:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_Z;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_X;
+                            break;
+                        case Surface.ROTATION_0:
+                        default:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Z;
+                            break;
+                    }
+
+                    SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX,
+                            worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                    // Transform rotation matrix into azimuth/pitch/roll
+                    SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+                } else if (Math.abs(orientation[2]) > Math.PI / 2) {
+                    // The roll is less than -90 degrees, or is larger than 90 degrees.
+                    // Remap the axes as if the device screen was face down,
+                    // and adjust the rotation matrix for the device orientation.
+                    switch (windowManager.getDefaultDisplay().getRotation()) {
+                        case Surface.ROTATION_90:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_Y;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_X;
+                            break;
+                        case Surface.ROTATION_180:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_MINUS_X;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_Y;
+                            break;
+                        case Surface.ROTATION_270:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_Y;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_X;
+                            break;
+                        case Surface.ROTATION_0:
+                        default:
+                            worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                            worldAxisForDeviceAxisY = SensorManager.AXIS_MINUS_Y;
                             break;
                     }
 

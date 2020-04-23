@@ -50,6 +50,40 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="4dp"
+                android:text="Rotation vector(vert2):" />
+
+            <TextView
+                android:id="@+id/rotation_vector_vert2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="4dp"
+                android:text="Rotation vector(hori2):" />
+
+            <TextView
+                android:id="@+id/rotation_vector_hori2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="4dp"
                 android:text="Rotation vector(fixed):" />
 
             <TextView
@@ -67,10 +101,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="4dp"
-                android:text="Rotation vector(pitch):" />
+                android:text="Rotation vector(pitch, roll):" />
 
             <TextView
-                android:id="@+id/rotation_vector_pitch"
+                android:id="@+id/rotation_vector_pitch_roll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
@@ -152,6 +186,40 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="4dp"
+                android:text="Accelerometer+Magnetic(vert2):" />
+
+            <TextView
+                android:id="@+id/accelerometer_magnetic_vert2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="4dp"
+                android:text="Accelerometer+Magnetic(hori2):" />
+
+            <TextView
+                android:id="@+id/accelerometer_magnetic_hori2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="4dp"
                 android:text="Accelerometer+Magnetic(fixed):" />
 
             <TextView
@@ -169,10 +237,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="4dp"
-                android:text="Accelerometer+Magnetic(pitch):" />
+                android:text="Accelerometer+Magnetic(pitch, roll):" />
 
             <TextView
-                android:id="@+id/accelerometer_magnetic_pitch"
+                android:id="@+id/accelerometer_magnetic_pitch_roll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
